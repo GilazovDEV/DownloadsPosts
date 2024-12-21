@@ -2,8 +2,9 @@ from telethon import TelegramClient, events
 import asyncio
 import re
 
-# Замените эти значения на ваши
 
+
+# Инициализация клиента
 client = TelegramClient("session_name", api_id, api_hash)
 
 
@@ -120,6 +121,57 @@ async def handle_txt(event):
                 await event.respond(f"Произошла ошибка: {str(e)}")
     else:
         await event.respond("У вас нет прав для использования этого бота.")
+
+# Команда /all — для скачивания и отправки текстовых сообщений, фотографий и видео
+@client.on(events.NewMessage(pattern='/all'))
+async def handle_all(event):
+    # Получаем ID группы по ссылке
+    group_id = await get_group_id()
+
+    # Проверка на разрешённого пользователя или если сообщение из группы
+    if event.sender_id in allowed_user_ids or event.chat_id == group_id:
+        if event.is_private or event.chat_id == group_id:
+            try:
+                # Парсим сообщение (с использованием split для получения ссылки и числа)
+                message = event.message.text.split(maxsplit=2)
+                if len(message) != 3:
+                    raise ValueError("Формат должен быть: /all ссылка количество")
+
+                channel_url = message[1]
+                limit = int(message[2])
+
+                # Подключаемся к каналу
+                channel = await client.get_entity(channel_url)
+                if not channel:
+                    raise ValueError("Канал не найден!")
+
+                # Скачиваем сообщения из канала (текст, фото и видео)
+                count = 0
+                async for message in client.iter_messages(channel, limit=limit):
+                    if message.text:
+                        # Убираем ссылки из текста
+                        cleaned_text = re.sub(r'http[s]?://\S+', '', message.text)
+                        # Отправляем текстовые сообщения в группу
+                        if cleaned_text:
+                            await client.send_message(group_id, cleaned_text)
+                        count += 1
+                    if message.photo or message.video:
+                        # Отправляем фотографии и видео в группу с подписью (если есть текст)
+                        await client.send_file(group_id, message.media, caption=message.text if message.text else None)
+                        count += 1
+
+                    if count >= limit:  # Прерываем после достижения лимита
+                        break
+
+                    # Задержка 3 секунды между отправками
+                    await asyncio.sleep(3)
+
+                await event.respond(f"Скачано {count} сообщений (текст, фото и видео) из канала {channel_url} и отправлено в группу.")
+            except Exception as e:
+                await event.respond(f"Произошла ошибка: {str(e)}")
+    else:
+        await event.respond("У вас нет прав для использования этого бота.")
+
 
 # Команда /no_all — для скачивания и отправки только фотографий и видео
 @client.on(events.NewMessage(pattern='/no_all'))
