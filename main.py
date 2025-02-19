@@ -2,7 +2,12 @@ from telethon import TelegramClient, events
 import asyncio
 import re
 
-
+# Замените эти значения на ваши
+api_id = "27925368"
+api_hash = "048e8433492a0eaa647f5459643fd5d0"
+phone_number = "+998905007915"
+group_link = "https://t.me/+PyWXrFzlkGQ3YmRi"  # t.me/username или https://t.me/...
+allowed_user_ids = [1075848452, 1337662209]  # Список ID разрешённых пользователей
 
 # Инициализация клиента
 client = TelegramClient("session_name", api_id, api_hash)
@@ -69,7 +74,7 @@ async def handle_img(event):
                         break
 
                     # Задержка 3 секунды между отправками
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(5)
 
                 await event.respond(f"Скачано {count} изображений из канала {channel_url} и отправлено в группу.")
             except Exception as e:
@@ -114,7 +119,7 @@ async def handle_txt(event):
                         break
 
                     # Задержка 3 секунды между отправками
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(5)
 
                 await event.respond(f"Скачано {count} текстовых сообщений из канала {channel_url} и отправлено в группу.")
             except Exception as e:
@@ -164,7 +169,7 @@ async def handle_all(event):
                         break
 
                     # Задержка 3 секунды между отправками
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(5)
 
                 await event.respond(f"Скачано {count} сообщений (текст, фото и видео) из канала {channel_url} и отправлено в группу.")
             except Exception as e:
@@ -208,7 +213,7 @@ async def handle_no_all(event):
                         break
 
                     # Задержка 3 секунды между отправками
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(5)
 
                 await event.respond(f"Скачано {count} медиафайлов (фото и видео) из канала {channel_url} и отправлено в группу.")
             except Exception as e:
